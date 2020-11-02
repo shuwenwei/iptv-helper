@@ -13,6 +13,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const (
@@ -25,7 +26,7 @@ var (
 	viewgood = ""
 )
 
-func Send(username, password string) {
+func Run(username, password string) {
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{Jar: jar}
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -46,6 +47,27 @@ func Send(username, password string) {
 
 	loginUserPassword := getLoginUsernamePassword(&client)
 	fmt.Println(loginUserPassword)
+
+	setVideoUrl(username, loginUserPassword)
+}
+
+func setVideoUrl(username, password string) {
+	//baseUrl := "http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?ModeType=PlayVOD,StreamType=HTTP_MP4,Ver=8.0.0.2,"
+	testUrl := fmt.Sprint("http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?" +
+		"ModeType=PlayVOD," +
+		"StreamType=HTTP_MP4," +
+		"Ver=8.0.0.2," +
+		"StreamID=7037," +
+		"ClassID=53," +
+		"ClassName=%e5%bd%b1%e8%a7%86%e6%ac%a3%e8%b5%8f," +
+		"assetID=193," +
+		"assetName=%e7%88%86%e8%a3%82%e9%bc%93%e6%89%8b," +
+		"Episode_ID=1," +
+		"Username="+ username + "," +
+		"Password=" + password + "," +
+		"Redirect=false," +
+		"Random="+ fmt.Sprintf("%v", time.Now().Unix()) + "000")
+	fmt.Println(testUrl)
 }
 
 func getLoginUsernamePassword(client *http.Client) string {
