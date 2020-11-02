@@ -27,6 +27,15 @@ var (
 func Send(username, password string) {
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{Jar: jar}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		req.Host = "wyjx.ncu.edu.cn"
+		req.Header.Set("Host", "wyjx.ncu.edu.cn")
+		req.URL.Host = "wyjx.ncu.edu.cn"
+		return nil
+	}
 	beforeLogin(&client)
 	fmt.Println("publicKey:", publicKey)
 	fmt.Println("lt:", lt)
@@ -67,6 +76,7 @@ func sendLoginRequest(client *http.Client, username, password string) {
 	}
 	defer resp.Body.Close()
 	respText, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(resp.Cookies())
 	fmt.Println(string(respText))
 }
 
