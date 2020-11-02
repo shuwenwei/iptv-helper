@@ -48,10 +48,24 @@ func Run(username, password string) {
 	loginUserPassword := getLoginUsernamePassword(&client)
 	fmt.Println(loginUserPassword)
 
-	setVideoUrl(username, loginUserPassword)
+	toBaseVideoUrl := getVideoUrl(username, loginUserPassword)
+	fmt.Println(toBaseVideoUrl)
+	getBaseVideoUrl(toBaseVideoUrl)
 }
 
-func setVideoUrl(username, password string) {
+func getBaseVideoUrl(baseUrl string) string {
+	resp, err := http.Get(baseUrl)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+	respPlain, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(respPlain))
+	return ""
+}
+
+func getVideoUrl(username, password string) string {
 	//baseUrl := "http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?ModeType=PlayVOD,StreamType=HTTP_MP4,Ver=8.0.0.2,"
 	testUrl := fmt.Sprint("http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?" +
 		"ModeType=PlayVOD," +
@@ -68,6 +82,7 @@ func setVideoUrl(username, password string) {
 		"Redirect=false," +
 		"Random="+ fmt.Sprintf("%v", time.Now().Unix()) + "000")
 	fmt.Println(testUrl)
+	return testUrl
 }
 
 func getLoginUsernamePassword(client *http.Client) string {
