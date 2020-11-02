@@ -22,6 +22,7 @@ const (
 var (
 	publicKey = ""
 	lt = ""
+	viewgood = ""
 )
 
 func Send(username, password string) {
@@ -40,15 +41,40 @@ func Send(username, password string) {
 	fmt.Println("publicKey:", publicKey)
 	fmt.Println("lt:", lt)
 
-	sendLoginRequest(&client, username, password)
+	viewgood = sendLoginRequest(&client, username, password)
+	fmt.Println(viewgood)
 
+	loginUserPassword := getLoginUsernamePassword(&client)
+	fmt.Println(loginUserPassword)
 }
 
-func sendLoginRequest(client *http.Client, username, password string) {
+func getLoginUsernamePassword(client *http.Client) string {
+	getRequest, _ := http.NewRequest("GET", "http://wyjx.ncu.edu.cn/SPM/sso/Default.aspx?action=pc&host=wyjx.ncu.edu.cn", nil)
+	getRequest.Header.Add("Host", "wyjx.ncu.edu.cn")
+	resp, err := client.Do(getRequest)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	pageDoc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	pageText := pageDoc.Find("body").Text()
+	start := strings.Index(pageText, "loginuserpassword=") + 19
+	return pageText[start:start+16]
+	//pageBody, _ := ioutil.ReadAll(resp.Body)
+	//fmt.Println(string(pageBody))
+}
+
+func sendLoginRequest(client *http.Client, username, password string) string {
 	password, err := encodePassword([]byte(password))
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	values := url.Values{
@@ -66,18 +92,16 @@ func sendLoginRequest(client *http.Client, username, password string) {
 	fmt.Println("reqBody:", string(reqBody))
 	setRequestHeader(postReq)
 
-	//if true {
-	//	return
-	//}
 	resp, err := client.Do(postReq)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 	defer resp.Body.Close()
-	respText, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(resp.Cookies())
-	fmt.Println(string(respText))
+	//respText, _ := ioutil.ReadAll(resp.Body)
+	//fmt.Println(resp.Cookies())
+	//fmt.Println(string(respText))
+	return resp.Cookies()[0].Value
 }
 
 func encodePassword(origData []byte) (string, error) {
