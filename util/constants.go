@@ -6,4 +6,5 @@ const (
 	VideoStartSuffix    = ",Method=Play_start,"
 	VideoTeardownSuffix = ",Method=Play_Teardown"
 	DefaultCfgPath 		= "iptv.toml"
+	DefaultCachePath 	= "pwdcache"
 )

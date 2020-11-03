@@ -19,6 +19,13 @@ var (
 )
 
 func Login(username, password string) *Iptv {
+	if videoLoginPwd, exists := checkCache(); exists {
+		return &Iptv{
+			iptvUsername: username,
+			iptvPassword: videoLoginPwd,
+		}
+	}
+
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{Jar: jar}
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -43,7 +50,13 @@ func Login(username, password string) *Iptv {
 		iptvUsername: username,
 		iptvPassword: loginUserPassword,
 	}
+	afterLogin(loginUserPassword)
+
 	return &iptvWatcher
+}
+
+func afterLogin(videoUserPwd string) {
+	setCache(videoUserPwd)
 }
 
 func beforeLogin(client *http.Client) {
