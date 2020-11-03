@@ -5,6 +5,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"io/ioutil"
 	"iptv-helper/util"
+	"log"
 	"os"
 )
 
@@ -27,7 +28,7 @@ func LoadCfg(path string) *IptvConfig {
 	var iptvConfig IptvConfig
 	_, err := toml.DecodeFile(path,&iptvConfig)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return &iptvConfig
 }
