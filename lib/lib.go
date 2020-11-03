@@ -11,7 +11,6 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const (
@@ -45,41 +44,13 @@ func Run(username, password string) {
 	loginUserPassword := getLoginUsernamePassword(&client)
 	fmt.Println(loginUserPassword)
 
-	toBaseVideoUrl := getVideoUrl(username, loginUserPassword)
-	fmt.Println(toBaseVideoUrl)
-	getBaseVideoUrl(toBaseVideoUrl)
-}
-
-func getBaseVideoUrl(baseUrl string) string {
-	resp, err := http.Get(baseUrl)
-	if err != nil {
-		fmt.Println(err)
-		return ""
+	iptvWatcher := Iptv{
+		iptvUsername: username,
+		iptvPassword: loginUserPassword,
 	}
-	defer resp.Body.Close()
-	respPlain, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(respPlain))
-	return util.ParseXML(&respPlain)
-}
 
-func getVideoUrl(username, password string) string {
-	//baseUrl := "http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?ModeType=PlayVOD,StreamType=HTTP_MP4,Ver=8.0.0.2,"
-	testUrl := fmt.Sprint("http://wyjx.ncu.edu.cn/VIEWGOOD/adi/portal/load.ashx?" +
-		"ModeType=PlayVOD," +
-		"StreamType=HTTP_MP4," +
-		"Ver=8.0.0.2," +
-		"StreamID=7037," +
-		"ClassID=53," +
-		"ClassName=%e5%bd%b1%e8%a7%86%e6%ac%a3%e8%b5%8f," +
-		"assetID=193," +
-		"assetName=%e7%88%86%e8%a3%82%e9%bc%93%e6%89%8b," +
-		"Episode_ID=1," +
-		"Username="+ username + "," +
-		"Password=" + password + "," +
-		"Redirect=false," +
-		"Random="+ fmt.Sprintf("%v", time.Now().Unix()) + "000")
-	fmt.Println(testUrl)
-	return testUrl
+	iptvWatcher.GetBaseVideoUrl()
+	fmt.Println("baseURL:", iptvWatcher.baseUrl)
 }
 
 func getLoginUsernamePassword(client *http.Client) string {
@@ -100,8 +71,6 @@ func getLoginUsernamePassword(client *http.Client) string {
 	pageText := pageDoc.Find("body").Text()
 	start := strings.Index(pageText, "loginuserpassword=") + 19
 	return pageText[start:start+16]
-	//pageBody, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(pageBody))
 }
 
 func sendLoginRequest(client *http.Client, username, password string) string {
@@ -132,9 +101,6 @@ func sendLoginRequest(client *http.Client, username, password string) string {
 		return ""
 	}
 	defer resp.Body.Close()
-	//respText, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(resp.Cookies())
-	//fmt.Println(string(respText))
 	return resp.Cookies()[0].Value
 }
 
