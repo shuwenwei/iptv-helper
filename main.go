@@ -1,7 +1,14 @@
 package main
 
-import "iptv-helper/lib"
+import (
+	"fmt"
+	"iptv-helper/lib"
+	"iptv-helper/util"
+)
 
 func main() {
-	lib.Send("6104119052", "password")
+	ncuUser := lib.LoadCfg(util.DefaultCfgPath)
+	fmt.Println(ncuUser.Username)
+	fmt.Println(ncuUser.Password)
+	lib.Run(ncuUser.Username, ncuUser.Password)
 }
