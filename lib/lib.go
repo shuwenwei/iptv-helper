@@ -3,6 +3,7 @@ package lib
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
@@ -62,7 +63,27 @@ func getBaseVideoUrl(baseUrl string) string {
 	defer resp.Body.Close()
 	respPlain, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respPlain))
-	return ""
+	return parseXML(&respPlain)
+}
+
+type VideoUrlWrapper struct {
+	XMLName xml.Name `xml:"LoadBalancing"`
+	Result bool `xml:"Result"`
+	Protocol string `xml:"Protocol"`
+	StreamURL string `xml:"StreamURL"`
+	Msg string `xml:"Msg"`
+}
+
+func parseXML(respPlain *[]byte) string {
+	videoInfo := new(VideoUrlWrapper)
+	err := xml.Unmarshal(*respPlain, &videoInfo)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	wrappedStreamURL := videoInfo.StreamURL
+	fmt.Println("wrappedStreamURL:", wrappedStreamURL)
+	return wrappedStreamURL
 }
 
 func getVideoUrl(username, password string) string {
