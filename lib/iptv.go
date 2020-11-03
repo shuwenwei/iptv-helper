@@ -44,3 +44,15 @@ func (instance *Iptv)GetBaseVideoUrl() {
 	fmt.Println("respPlain",string(respPlain))
 	instance.baseUrl = util.ParseXmlToUrl(&respPlain)
 }
+
+func (instance *Iptv)StartRequest() {
+	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
+	fmt.Println(videoStartUrl)
+	http.Get(videoStartUrl)
+}
+
+func (instance *Iptv) EndRequest() {
+	videoEndUrl := fmt.Sprintf("%s%s", instance.baseUrl, util.VideoTeardownSuffix)
+	fmt.Println(videoEndUrl)
+	http.Get(videoEndUrl)
+}

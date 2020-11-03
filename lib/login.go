@@ -1,15 +1,50 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"iptv-helper/util"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 )
+
+var (
+	lt = ""
+	viewgood = ""
+)
+
+func Login(username, password string) *Iptv {
+	jar, _ := cookiejar.New(nil)
+	client := http.Client{Jar: jar}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		req.Host = util.RedirectHost
+		req.Header.Set("Host", util.RedirectHost)
+		req.URL.Host = util.RedirectHost
+		return nil
+	}
+	beforeLogin(&client)
+	fmt.Println("publicKey:", util.PwdEncoderInstance.PublicKey)
+	fmt.Println("lt:", lt)
+
+	viewgood = sendLoginRequest(&client, username, password)
+	fmt.Println(viewgood)
+
+	loginUserPassword := util.GetLoginUsernamePassword(&client)
+
+	iptvWatcher := Iptv{
+		iptvUsername: username,
+		iptvPassword: loginUserPassword,
+	}
+	return &iptvWatcher
+}
 
 func beforeLogin(client *http.Client) {
 	getBody, err := getPage(client)
@@ -30,7 +65,7 @@ func beforeLogin(client *http.Client) {
 }
 
 func getPage(client *http.Client) (io.ReadCloser, error) {
-	getRequest, _ := http.NewRequest("GET", util.LOGIN_URL, nil)
+	getRequest, _ := http.NewRequest("GET", util.LoginUrl, nil)
 	util.SetRequestHeader(getRequest)
 	resp, err := client.Do(getRequest)
 	if err != nil {
@@ -57,7 +92,7 @@ func sendLoginRequest(client *http.Client, username, password string) string {
 		"_eventId":   {"submit"},
 	}
 
-	postReq, _ := http.NewRequest("POST", util.LOGIN_URL, strings.NewReader(values.Encode()))
+	postReq, _ := http.NewRequest("POST", util.LoginUrl, strings.NewReader(values.Encode()))
 	reqBody, _ := ioutil.ReadAll(postReq.Body)
 	fmt.Println("reqBody:", string(reqBody))
 	util.SetRequestHeader(postReq)
