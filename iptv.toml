@@ -1,0 +1,6 @@
+[user]
+Username = "username"
+Password = "password"
+[app]
+Tasktime = 2
+Tasknum = 5
