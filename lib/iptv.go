@@ -8,11 +8,19 @@ import (
 	"time"
 )
 
+type IptvFactory struct {
+	appConfig *AppConfig
+}
+
+func (factory *IptvFactory) createTasks() {
+
+}
+
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
+	watchTime int8
 	baseUrl string
-	cfg *AppConfig
 }
 
 func (instance *Iptv) userVideoUrl() string {
@@ -49,7 +57,7 @@ func (instance *Iptv)GetBaseVideoUrl() {
 func (instance *Iptv)StartRequest() {
 	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
-	resp, _ := http.Get(videoStartUrl)
+	resp, _ :=  http.Get(videoStartUrl)
 	defer resp.Body.Close()
 }
 
