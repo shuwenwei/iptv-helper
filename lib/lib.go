@@ -1,15 +1,12 @@
 package lib
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
-	"math/big"
+	"iptv-helper/util"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -22,7 +19,6 @@ const (
 )
 
 var (
-	publicKey = ""
 	lt = ""
 	viewgood = ""
 )
@@ -40,7 +36,7 @@ func Run(username, password string) {
 		return nil
 	}
 	beforeLogin(&client)
-	fmt.Println("publicKey:", publicKey)
+	fmt.Println("publicKey:", util.PwdEncoderInstance.PublicKey)
 	fmt.Println("lt:", lt)
 
 	viewgood = sendLoginRequest(&client, username, password)
@@ -63,27 +59,7 @@ func getBaseVideoUrl(baseUrl string) string {
 	defer resp.Body.Close()
 	respPlain, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(respPlain))
-	return parseXML(&respPlain)
-}
-
-type VideoUrlWrapper struct {
-	XMLName xml.Name `xml:"LoadBalancing"`
-	Result bool `xml:"Result"`
-	Protocol string `xml:"Protocol"`
-	StreamURL string `xml:"StreamURL"`
-	Msg string `xml:"Msg"`
-}
-
-func parseXML(respPlain *[]byte) string {
-	videoInfo := new(VideoUrlWrapper)
-	err := xml.Unmarshal(*respPlain, &videoInfo)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-	wrappedStreamURL := videoInfo.StreamURL
-	fmt.Println("wrappedStreamURL:", wrappedStreamURL)
-	return wrappedStreamURL
+	return util.ParseXML(&respPlain)
 }
 
 func getVideoUrl(username, password string) string {
@@ -129,7 +105,7 @@ func getLoginUsernamePassword(client *http.Client) string {
 }
 
 func sendLoginRequest(client *http.Client, username, password string) string {
-	password, err := encodePassword([]byte(password))
+	password, err := util.PwdEncoderInstance.EncodePassword([]byte(password))
 	if err != nil {
 		fmt.Println(err)
 		return ""
@@ -148,7 +124,7 @@ func sendLoginRequest(client *http.Client, username, password string) string {
 	postReq, _ := http.NewRequest("POST", loginUrl, strings.NewReader(values.Encode()))
 	reqBody, _ := ioutil.ReadAll(postReq.Body)
 	fmt.Println("reqBody:", string(reqBody))
-	setRequestHeader(postReq)
+	util.SetRequestHeader(postReq)
 
 	resp, err := client.Do(postReq)
 	if err != nil {
@@ -160,24 +136,6 @@ func sendLoginRequest(client *http.Client, username, password string) string {
 	//fmt.Println(resp.Cookies())
 	//fmt.Println(string(respText))
 	return resp.Cookies()[0].Value
-}
-
-func encodePassword(origData []byte) (string, error) {
-	i := new(big.Int)
-	i, ok := i.SetString(publicKey, 16)
-
-	if !ok {
-		return "", errors.New("err")
-	}
-	pub := rsa.PublicKey{
-		N: i,
-		E: 0x10001,
-	}
-	bytePwd, err := rsa.EncryptPKCS1v15(rand.Reader, &pub, origData)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", bytePwd), nil
 }
 
 func beforeLogin(client *http.Client) {
@@ -195,26 +153,18 @@ func beforeLogin(client *http.Client) {
 		return
 	}
 	lt = getLt(page)
-	publicKey = getPublicKey(page)
+	util.PwdEncoderInstance.PublicKey = getPublicKey(page)
 }
 
 func getPage(client *http.Client) (io.ReadCloser, error) {
 	getRequest, _ := http.NewRequest("GET", loginUrl, nil)
-	setRequestHeader(getRequest)
+	util.SetRequestHeader(getRequest)
 	resp, err := client.Do(getRequest)
 	if err != nil {
 		return nil, err
 	}
 	fmt.Println("Header:", resp.Header)
 	return resp.Body, nil
-}
-
-func setRequestHeader(req *http.Request) {
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Referer", "https://cas.ncu.edu.cn:8443/cas/login?service=http%3a%2f%2fwyjx.ncu.edu.cn%2fSPM%2fsso%2fDefault.aspx%3faction%3dpc%26host%3dwyjx.ncu.edu.cn")
-	req.Header.Add("Host", "cas.ncu.edu.cn:8443")
-	req.Header.Add("Origin", "https://cas.ncu.edu.cn:8443")
-	req.Header.Add("Connection", "keep-alive")
 }
 
 func getLt(page *goquery.Document) string {
