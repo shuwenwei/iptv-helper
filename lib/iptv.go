@@ -4,22 +4,35 @@ import (
 	"fmt"
 	"io/ioutil"
 	"iptv-helper/util"
+	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
 type IptvFactory struct {
-	appConfig *AppConfig
+	IptvCfg *IptvConfig
 }
 
-func (factory *IptvFactory) createTasks() {
+var wg sync.WaitGroup
 
+func (factory *IptvFactory) CreateTasks() {
+	cfg := factory.IptvCfg
+	tasknum := cfg.AppConfig.Tasknum
+	if tasknum <= 0 {
+		log.Fatal("illegal tasknum:", tasknum)
+	}
+	for i := 0; i < int(tasknum); i++ {
+		wg.Add(1)
+		go Run(&cfg.NcuUser)
+	}
+	wg.Wait()
 }
 
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
-	watchTime int8
+	watchTime int64
 	baseUrl string
 }
 

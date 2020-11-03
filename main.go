@@ -7,7 +7,9 @@ import (
 
 func main() {
 	iptvConfig := lib.LoadCfg(util.DefaultCfgPath)
-	ncuUser := iptvConfig.NcuUser
-	appConfig := iptvConfig.AppConfig
-	lib.Run(&ncuUser, &appConfig)
+	//ncuUser := iptvConfig.NcuUser
+	//appConfig := iptvConfig.AppConfig
+	factory := lib.IptvFactory{iptvConfig}
+	factory.CreateTasks()
+	//lib.Run(&ncuUser, &appConfig)
 }
