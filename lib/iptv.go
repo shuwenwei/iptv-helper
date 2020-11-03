@@ -24,7 +24,7 @@ func (factory *IptvFactory) CreateTasks() {
 	}
 	for i := 0; i < int(tasknum); i++ {
 		wg.Add(1)
-		go Run(&cfg.NcuUser)
+		go Run(&cfg.NcuUser, cfg.AppConfig.Tasktime)
 	}
 	wg.Wait()
 }
@@ -32,7 +32,7 @@ func (factory *IptvFactory) CreateTasks() {
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
-	watchTime int64
+	//watchTime int64
 	baseUrl string
 }
 
