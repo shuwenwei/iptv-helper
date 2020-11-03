@@ -9,21 +9,27 @@ import (
 )
 
 type IptvConfig struct {
-	NcuUser NcuUser		`toml:"user"`
+	NcuUser CASUser 	`toml:"user"`
+	AppConfig AppConfig `toml:"app"`
 }
 
-type NcuUser struct {
+type AppConfig struct {
+	Tasktime int8
+	Tasknum int8
+}
+
+type CASUser struct {
 	Username string
 	Password string
 }
 
-func LoadCfg(path string) *NcuUser {
+func LoadCfg(path string) *IptvConfig {
 	var iptvConfig IptvConfig
 	_, err := toml.DecodeFile(path,&iptvConfig)
 	if err != nil {
 		panic(err)
 	}
-	return &iptvConfig.NcuUser
+	return &iptvConfig
 }
 
 func setCache(videoUserPwd string) {

@@ -12,6 +12,7 @@ type Iptv struct {
 	iptvUsername string
 	iptvPassword string
 	baseUrl string
+	cfg *AppConfig
 }
 
 func (instance *Iptv) userVideoUrl() string {
@@ -48,11 +49,13 @@ func (instance *Iptv)GetBaseVideoUrl() {
 func (instance *Iptv)StartRequest() {
 	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
-	http.Get(videoStartUrl)
+	resp, _ := http.Get(videoStartUrl)
+	defer resp.Body.Close()
 }
 
 func (instance *Iptv) EndRequest() {
 	videoEndUrl := fmt.Sprintf("%s%s", instance.baseUrl, util.VideoTeardownSuffix)
 	fmt.Println(videoEndUrl)
-	http.Get(videoEndUrl)
+	resp, _ := http.Get(videoEndUrl)
+	defer resp.Body.Close()
 }
