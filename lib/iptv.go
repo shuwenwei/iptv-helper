@@ -22,7 +22,7 @@ func (factory *IptvFactory) CreateTasks() {
 	if tasknum <= 0 {
 		log.Fatal("illegal tasknum:", tasknum)
 	}
-	for i := 0; i < int(tasknum); i++ {
+	for i := 0; i < tasknum; i++ {
 		wg.Add(1)
 		go Run(&cfg.NcuUser, cfg.AppConfig.Tasktime)
 	}
@@ -32,7 +32,6 @@ func (factory *IptvFactory) CreateTasks() {
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
-	//watchTime int
 	baseUrl string
 }
 
@@ -54,7 +53,7 @@ func (instance *Iptv) userVideoUrl() string {
 	return testUrl
 }
 
-func (instance *Iptv)GetBaseVideoUrl() {
+func (instance *Iptv) setBaseUrl() {
 	fmt.Println("userVideoUrl",instance.userVideoUrl())
 	resp, err := http.Get(instance.userVideoUrl())
 	if err != nil {
@@ -68,6 +67,7 @@ func (instance *Iptv)GetBaseVideoUrl() {
 }
 
 func (instance *Iptv)StartRequest() {
+	instance.setBaseUrl()
 	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
 	resp, err :=  http.Get(videoStartUrl)
@@ -75,7 +75,6 @@ func (instance *Iptv)StartRequest() {
 		fmt.Println(err)
 		return
 	}
-	//time.Sleep(time.Second * 20)
 	defer resp.Body.Close()
 }
 

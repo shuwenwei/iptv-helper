@@ -6,8 +6,6 @@ import (
 
 func Run(ncuUser *CASUser, watchTime int) {
 	iptvWatcher := Login(ncuUser.Username, ncuUser.Password)
-	iptvWatcher.GetBaseVideoUrl()
-	//iptvWatcher.watchTime = watchTime
 	fmt.Println("baseURL:", iptvWatcher.baseUrl)
 	iptvWatcher.StartRequest()
 	fmt.Println("start watching video")
