@@ -32,7 +32,7 @@ func (factory *IptvFactory) CreateTasks() {
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
-	//watchTime int64
+	//watchTime int
 	baseUrl string
 }
 
@@ -70,7 +70,23 @@ func (instance *Iptv)GetBaseVideoUrl() {
 func (instance *Iptv)StartRequest() {
 	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
-	resp, _ :=  http.Get(videoStartUrl)
+	resp, err :=  http.Get(videoStartUrl)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	//time.Sleep(time.Second * 20)
+	defer resp.Body.Close()
+}
+
+func (instance *Iptv) KeepWatchRequest() {
+	videoRunningUrl := fmt.Sprintf("%s%Random=%v000", instance.baseUrl, util.VideoRunningSuffix, time.Now().Unix())
+	resp, err := http.Get(videoRunningUrl)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	time.Sleep(time.Second * 20)
 	defer resp.Body.Close()
 }
 

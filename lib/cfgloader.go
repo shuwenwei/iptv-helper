@@ -15,8 +15,8 @@ type IptvConfig struct {
 }
 
 type AppConfig struct {
-	Tasktime int8
-	Tasknum int8
+	Tasktime int
+	Tasknum int
 }
 
 type CASUser struct {

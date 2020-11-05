@@ -2,16 +2,19 @@ package lib
 
 import (
 	"fmt"
-	"time"
 )
 
-func Run(ncuUser *CASUser, watchTime int8) {
+func Run(ncuUser *CASUser, watchTime int) {
 	iptvWatcher := Login(ncuUser.Username, ncuUser.Password)
 	iptvWatcher.GetBaseVideoUrl()
+	//iptvWatcher.watchTime = watchTime
 	fmt.Println("baseURL:", iptvWatcher.baseUrl)
-	go iptvWatcher.StartRequest()
+	iptvWatcher.StartRequest()
 	fmt.Println("start watching video")
-	time.Sleep(time.Minute * time.Duration(watchTime))
+	times := watchTime * 3
+	for i := 0; i < times; i++ {
+		iptvWatcher.KeepWatchRequest()
+	}
 	iptvWatcher.EndRequest()
 	fmt.Println("end watching video")
 	wg.Done()
