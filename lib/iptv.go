@@ -1,12 +1,16 @@
 package lib
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"iptv-helper/util"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -22,9 +26,24 @@ func (factory *IptvFactory) CreateTasks() {
 	if tasknum <= 0 {
 		log.Fatal("illegal tasknum:", tasknum)
 	}
+	iptvWatcher := Login(cfg.NcuUser.Username, cfg.NcuUser.Password)
+	iptvWatcher.watchTime = cfg.AppConfig.Tasknum
+	iptvWatcher.endFlag = false
+	signalChannel := make(chan os.Signal)
+	signal.Notify(signalChannel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
+
+	go func() {
+		for s := range signalChannel{
+			switch s {
+			case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM:
+				iptvWatcher.endFlag = true
+				fmt.Println("exit in 20 seconds")
+			}
+		}
+	}()
 	for i := 0; i < tasknum; i++ {
 		wg.Add(1)
-		go Run(&cfg.NcuUser, cfg.AppConfig.Tasktime)
+		go Run(iptvWatcher)
 	}
 	wg.Wait()
 }
@@ -32,7 +51,9 @@ func (factory *IptvFactory) CreateTasks() {
 type Iptv struct {
 	iptvUsername string
 	iptvPassword string
-	baseUrl string
+	watchTime int
+	endFlag bool
+	//baseUrl string
 }
 
 func (instance *Iptv) userVideoUrl() string {
@@ -53,22 +74,22 @@ func (instance *Iptv) userVideoUrl() string {
 	return testUrl
 }
 
-func (instance *Iptv) setBaseUrl() {
+func (instance *Iptv) getBaseUrl() string {
 	fmt.Println("userVideoUrl",instance.userVideoUrl())
 	resp, err := http.Get(instance.userVideoUrl())
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 	defer resp.Body.Close()
 	respPlain, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println("respPlain",string(respPlain))
-	instance.baseUrl = util.ParseXmlToUrl(&respPlain)
+
+	return util.ParseXmlToUrl(&respPlain)
 }
 
-func (instance *Iptv)StartRequest() {
-	instance.setBaseUrl()
-	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", instance.baseUrl, util.VideoStartSuffix, time.Now().Unix())
+func (instance *Iptv)StartRequest(ctx context.Context) {
+	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", ctx.Value("baseUrl"), util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
 	resp, err :=  http.Get(videoStartUrl)
 	if err != nil {
@@ -78,8 +99,8 @@ func (instance *Iptv)StartRequest() {
 	defer resp.Body.Close()
 }
 
-func (instance *Iptv) KeepWatchRequest() {
-	videoRunningUrl := fmt.Sprintf("%s%Random=%v000", instance.baseUrl, util.VideoRunningSuffix, time.Now().Unix())
+func (instance *Iptv) KeepWatchRequest(ctx context.Context) {
+	videoRunningUrl := fmt.Sprintf("%s%Random=%v000", ctx.Value("baseUrl"), util.VideoRunningSuffix, time.Now().Unix())
 	resp, err := http.Get(videoRunningUrl)
 	if err != nil {
 		fmt.Println(err)
@@ -89,8 +110,8 @@ func (instance *Iptv) KeepWatchRequest() {
 	defer resp.Body.Close()
 }
 
-func (instance *Iptv) EndRequest() {
-	videoEndUrl := fmt.Sprintf("%s%s", instance.baseUrl, util.VideoTeardownSuffix)
+func (instance *Iptv) EndRequest(ctx context.Context) {
+	videoEndUrl := fmt.Sprintf("%s%s", ctx.Value("baseUrl"), util.VideoTeardownSuffix)
 	fmt.Println(videoEndUrl)
 	resp, _ := http.Get(videoEndUrl)
 	defer resp.Body.Close()
