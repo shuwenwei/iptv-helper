@@ -100,7 +100,7 @@ func (instance *Iptv)StartRequest(ctx context.Context) {
 }
 
 func (instance *Iptv) KeepWatchRequest(ctx context.Context) {
-	videoRunningUrl := fmt.Sprintf("%s%Random=%v000", ctx.Value("baseUrl"), util.VideoRunningSuffix, time.Now().Unix())
+	videoRunningUrl := fmt.Sprintf("%s%sRandom=%v000", ctx.Value("baseUrl"), util.VideoRunningSuffix, time.Now().Unix())
 	resp, err := http.Get(videoRunningUrl)
 	if err != nil {
 		fmt.Println(err)
