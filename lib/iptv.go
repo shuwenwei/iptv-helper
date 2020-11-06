@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"iptv-helper/util"
@@ -89,8 +88,8 @@ func (instance *Iptv) getBaseUrl() string {
 	return util.ParseXmlToUrl(&respPlain)
 }
 
-func (instance *Iptv)StartRequest(ctx context.Context) {
-	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", ctx.Value("baseUrl"), util.VideoStartSuffix, time.Now().Unix())
+func (instance *Iptv)StartRequest(baseUrl string) {
+	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
 	resp, err :=  http.Get(videoStartUrl)
 	if err != nil {
@@ -100,8 +99,8 @@ func (instance *Iptv)StartRequest(ctx context.Context) {
 	defer resp.Body.Close()
 }
 
-func (instance *Iptv) KeepWatchRequest(ctx context.Context) {
-	videoRunningUrl := fmt.Sprintf("%s%sRandom=%v000", ctx.Value("baseUrl"), util.VideoRunningSuffix, time.Now().Unix())
+func (instance *Iptv) KeepWatchRequest(baseUrl string) {
+	videoRunningUrl := fmt.Sprintf("%s%sRandom=%v000", baseUrl, util.VideoRunningSuffix, time.Now().Unix())
 	resp, err := http.Get(videoRunningUrl)
 	if err != nil {
 		fmt.Println(err)
@@ -111,8 +110,8 @@ func (instance *Iptv) KeepWatchRequest(ctx context.Context) {
 	defer resp.Body.Close()
 }
 
-func (instance *Iptv) EndRequest(ctx context.Context) {
-	videoEndUrl := fmt.Sprintf("%s%s", ctx.Value("baseUrl"), util.VideoTeardownSuffix)
+func (instance *Iptv) EndRequest(baseUrl string) {
+	videoEndUrl := fmt.Sprintf("%s%s", baseUrl, util.VideoTeardownSuffix)
 	fmt.Println(videoEndUrl)
 	resp, _ := http.Get(videoEndUrl)
 	defer resp.Body.Close()

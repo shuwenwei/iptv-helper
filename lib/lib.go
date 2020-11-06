@@ -1,21 +1,20 @@
 package lib
 
 import (
-	"context"
 	"fmt"
 )
 
 func Run(iptvWatcher *Iptv) {
-	ctx := context.WithValue(context.TODO(), "baseUrl", iptvWatcher.getBaseUrl())
+	baseUrl := iptvWatcher.getBaseUrl()
 	defer func() {
-		iptvWatcher.EndRequest(ctx)
+		iptvWatcher.EndRequest(baseUrl)
 		fmt.Println("end watching video")
 		wg.Done()
 	}()
-	iptvWatcher.StartRequest(ctx)
+	iptvWatcher.StartRequest(baseUrl)
 	fmt.Println("start watching video")
 	times := iptvWatcher.watchTime * 3
 	for i := 0; i < times && !iptvWatcher.endFlag; i++ {
-		iptvWatcher.KeepWatchRequest(ctx)
+		iptvWatcher.KeepWatchRequest(baseUrl)
 	}
 }
