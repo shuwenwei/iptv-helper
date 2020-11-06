@@ -26,7 +26,7 @@ func (factory *IptvFactory) CreateTasks() {
 		log.Fatal("illegal tasknum:", tasknum)
 	}
 	iptvWatcher := Login(cfg.NcuUser.Username, cfg.NcuUser.Password)
-	iptvWatcher.watchTime = cfg.AppConfig.Tasknum
+	iptvWatcher.watchTime = cfg.AppConfig.Tasktime
 	iptvWatcher.endFlag = false
 	signalChannel := make(chan os.Signal)
 	signal.Notify(signalChannel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
