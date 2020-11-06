@@ -43,6 +43,7 @@ func (factory *IptvFactory) CreateTasks() {
 	}()
 	for i := 0; i < tasknum; i++ {
 		wg.Add(1)
+		time.Sleep(time.Second)
 		go Run(iptvWatcher)
 	}
 	wg.Wait()
