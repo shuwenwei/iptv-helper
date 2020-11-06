@@ -9,7 +9,7 @@ Username = "username"
 Password = "password"
 [app]
 #每个goroutine观看的时间(分钟)
-Tasktime = 2
+Tasktime = 20
 #同时观看数量(goroutine数), 总播放时间 = Tasknum * Tasktime
-Tasknum = 5
+Tasknum = 10
 ```
