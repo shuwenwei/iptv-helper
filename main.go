@@ -7,6 +7,6 @@ import (
 
 func main() {
 	iptvConfig := lib.LoadCfg(util.DefaultCfgPath)
-	factory := lib.IptvFactory{iptvConfig}
+	factory := lib.IptvFactory{IptvCfg: iptvConfig}
 	factory.CreateTasks()
 }

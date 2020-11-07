@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io"
-	"io/ioutil"
 	"iptv-helper/util"
 	"net/http"
 	"net/http/cookiejar"
@@ -84,7 +83,6 @@ func getPage(client *http.Client) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Header:", resp.Header)
 	return resp.Body, nil
 }
 
@@ -106,8 +104,6 @@ func sendLoginRequest(client *http.Client, username, password string) string {
 	}
 
 	postReq, _ := http.NewRequest("POST", util.LoginUrl, strings.NewReader(values.Encode()))
-	reqBody, _ := ioutil.ReadAll(postReq.Body)
-	fmt.Println("reqBody:", string(reqBody))
 	util.SetRequestHeader(postReq)
 
 	resp, err := client.Do(postReq)

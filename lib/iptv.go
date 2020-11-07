@@ -29,12 +29,12 @@ func (factory *IptvFactory) CreateTasks() {
 	iptvWatcher.watchTime = cfg.AppConfig.Tasktime
 	iptvWatcher.endFlag = false
 	signalChannel := make(chan os.Signal)
-	signal.Notify(signalChannel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
+	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	go func() {
 		for s := range signalChannel{
 			switch s {
-			case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM:
+			case syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM:
 				iptvWatcher.endFlag = true
 				fmt.Println("exit in 20 seconds")
 			}
@@ -83,12 +83,11 @@ func (instance *Iptv) getBaseUrl() string {
 	}
 	defer resp.Body.Close()
 	respPlain, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("respPlain",string(respPlain))
 
 	return util.ParseXmlToUrl(&respPlain)
 }
 
-func (instance *Iptv)StartRequest(baseUrl string) {
+func (instance *Iptv) StartRequest(baseUrl string) {
 	videoStartUrl := fmt.Sprintf("%s%sRandom=%v000", baseUrl, util.VideoStartSuffix, time.Now().Unix())
 	fmt.Println(videoStartUrl)
 	resp, err :=  http.Get(videoStartUrl)
