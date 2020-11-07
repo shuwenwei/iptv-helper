@@ -21,6 +21,5 @@ func ParseXmlToUrl(respPlain *[]byte) string {
 		return ""
 	}
 	wrappedStreamURL := videoInfo.StreamURL
-	fmt.Println("wrappedStreamURL:", wrappedStreamURL)
 	return wrappedStreamURL
 }

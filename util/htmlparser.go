@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -23,8 +24,7 @@ func GetLoginUsernamePassword(client *http.Client) string {
 	getRequest.Header.Add("Host", "wyjx.ncu.edu.cn")
 	resp, err := client.Do(getRequest)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		log.Fatal("get loginUserPassword error")
 	}
 	defer resp.Body.Close()
 

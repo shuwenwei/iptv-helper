@@ -3,8 +3,8 @@ package util
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"errors"
 	"fmt"
+	"log"
 	"math/big"
 )
 
@@ -19,7 +19,7 @@ func (pwdEncoder *PwdEncoder) EncodePassword(origData []byte) (string, error) {
 	i, ok := i.SetString(pwdEncoder.PublicKey, 16)
 
 	if !ok {
-		return "", errors.New("err")
+		log.Fatal("set publicKey error")
 	}
 	pub := rsa.PublicKey{
 		N: i,
@@ -27,7 +27,7 @@ func (pwdEncoder *PwdEncoder) EncodePassword(origData []byte) (string, error) {
 	}
 	bytePwd, err := rsa.EncryptPKCS1v15(rand.Reader, &pub, origData)
 	if err != nil {
-		return "", err
+		log.Fatal("encode password error")
 	}
 	return fmt.Sprintf("%x", bytePwd), nil
 }
